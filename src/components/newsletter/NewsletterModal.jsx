@@ -17,7 +17,7 @@ const NewsletterModal = ({ isOpen, onClose }) => {
     setError('');
     
     try {
-      const response = await fetch('https://ai-agent-newsletter.onrender.com/generate_newsletter/', {
+      const response = await fetch('https://ai-agent-newsletter.onrender.com/generate_newsletter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
