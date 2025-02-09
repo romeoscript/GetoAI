@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Send, Wand2, X, AlertCircle } from 'lucide-react';
+import DisplayNewsletter from './DisplayNewsletter';
 
 const NewsletterModal = ({ isOpen, onClose }) => {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
-  const [generatedContent, setGeneratedContent] = useState('');
+  const [generatedContent, setGeneratedContent] = useState(null);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -17,7 +18,7 @@ const NewsletterModal = ({ isOpen, onClose }) => {
     setError('');
     
     try {
-      const response = await fetch('https://ai-agent-newsletter.onrender.com/generate_newsletter', {
+      const response = await fetch('https://ai-agent-newsletter.onrender.com/generate-newsletter/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,7 +33,7 @@ const NewsletterModal = ({ isOpen, onClose }) => {
       }
 
       const data = await response.json();
-      setGeneratedContent(data.generated_content || data.response || '');
+      setGeneratedContent(data);
     } catch (err) {
       setError('Failed to generate newsletter. Please try again.');
       console.error('Generation error:', err);
@@ -45,7 +46,7 @@ const NewsletterModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full relative">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-4xl w-full relative max-h-[90vh] overflow-y-auto">
         <button 
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
@@ -75,13 +76,6 @@ const NewsletterModal = ({ isOpen, onClose }) => {
             />
           </div>
 
-          {generatedContent && (
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-900 mb-2">Generated Newsletter</h3>
-              <div className="text-gray-700 whitespace-pre-wrap">{generatedContent}</div>
-            </div>
-          )}
-
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
@@ -99,6 +93,12 @@ const NewsletterModal = ({ isOpen, onClose }) => {
               </>
             )}
           </button>
+
+          {generatedContent && (
+            <div className="mt-8">
+              <DisplayNewsletter content={generatedContent} />
+            </div>
+          )}
         </div>
       </div>
     </div>
