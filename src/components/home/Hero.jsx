@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { Sparkles } from 'lucide-react';
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
-import ai from '../../assets/Ai.svg';
+import ai from '../../assets/AI.svg';
 
 const Hero = ({ onGetStarted }) => {
   const particlesInit = useCallback(async engine => {
