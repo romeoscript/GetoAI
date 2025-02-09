@@ -1,99 +1,101 @@
-import React from 'react';
-import { Sparkles, ExternalLink, Bot } from 'lucide-react';
+import React, { useState } from 'react';
+import { Copy, Check, User, Bot } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
-const MessageBubble = ({ children, type = 'ai' }) => (
-  <div className={`flex gap-3 ${type === 'ai' ? '' : 'flex-row-reverse'} mb-6`}>
-    <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${
-      type === 'ai' ? 'bg-blue-100 text-blue-600' : 'bg-white border-2 border-blue-600'
-    }`}>
-      {type === 'ai' ? <Bot className="w-6 h-6" /> : <Sparkles className="w-5 h-5" />}
-    </div>
-    <div className={`flex flex-col gap-2 max-w-[80%] ${type === 'ai' ? '' : 'items-end'}`}>
-      <div className={`rounded-2xl px-4 py-3 ${
-        type === 'ai' 
-          ? 'bg-white text-gray-800 shadow-sm' 
-          : 'bg-blue-600 text-white'
-      }`}>
-        {children}
+const Message = ({ content, type = 'ai', onCopy }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    if (onCopy) onCopy();
+  };
+
+  return (
+    <div className={`flex gap-6 p-6 ${type === 'user' ? 'bg-gray-50' : 'bg-white'}`}>
+      {/* Avatar */}
+      <div className="flex-shrink-0">
+        {type === 'user' ? (
+          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+            <User className="w-5 h-5 text-gray-600" />
+          </div>
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+            <Bot className="w-5 h-5 text-blue-600" />
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex-grow max-w-3xl space-y-4">
+        <div className="prose prose-blue max-w-none">
+          {type === 'user' ? (
+            <p className="text-gray-800">{content}</p>
+          ) : (
+            <ReactMarkdown
+              components={{
+                h1: ({ children }) => <h1 className="text-2xl font-bold mb-4">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-xl font-bold mb-3">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-lg font-bold mb-2">{children}</h3>,
+                p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+                a: ({ children, href }) => (
+                  <a href={href} className="text-blue-600 hover:text-blue-800" target="_blank" rel="noopener noreferrer">
+                    {children}
+                  </a>
+                ),
+                ul: ({ children }) => <ul className="list-disc pl-6 mb-4">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal pl-6 mb-4">{children}</ol>,
+                li: ({ children }) => <li className="mb-1">{children}</li>,
+                blockquote: ({ children }) => (
+                  <blockquote className="border-l-4 border-gray-200 pl-4 italic">{children}</blockquote>
+                ),
+                code: ({ children }) => (
+                  <code className="bg-gray-100 rounded px-1 py-0.5 text-sm">{children}</code>
+                ),
+                hr: () => <hr className="my-6 border-gray-200" />,
+              }}
+            >
+              {content}
+            </ReactMarkdown>
+          )}
+        </div>
+
+        {/* Copy button */}
+        {type === 'ai' && (
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {copied ? (
+              <>
+                <Check className="w-4 h-4" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4" />
+                Copy
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
-  </div>
-);
-
-const NewsletterContent = ({ content }) => (
-  <div className="bg-gray-100 rounded-xl p-6 shadow-inner overflow-y-auto max-h-[70vh]">
-    <div className="space-y-4">
-      {/* Welcome Message */}
-      <MessageBubble>
-        <h2 className="font-bold text-lg mb-2">Welcome to Team Geto Weekly Digest!</h2>
-        <p className="text-gray-600">
-          {content.split('---')[1].trim()}
-        </p>
-      </MessageBubble>
-
-      {/* Innovation of the Week */}
-      <MessageBubble type="user">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
-            <h3 className="font-semibold">Innovation of the Week</h3>
-          </div>
-          <p>{content.split('Innovation of the Week')[1].split('---')[0].trim()}</p>
-        </div>
-      </MessageBubble>
-
-      {/* Machine Learning */}
-      <MessageBubble>
-        <div className="space-y-2">
-          <h3 className="font-semibold">Key Advancements in Machine Learning</h3>
-          <p>{content.split('Key Advancements in Machine Learning')[1].split('---')[0].trim()}</p>
-          <div className="mt-2 text-sm text-blue-600 flex items-center gap-1">
-            <ExternalLink className="w-4 h-4" />
-            <a href="https://www.bytedance.com" target="_blank" rel="noopener noreferrer">
-              Learn more at ByteDance
-            </a>
-          </div>
-        </div>
-      </MessageBubble>
-
-      {/* Deep Learning */}
-      <MessageBubble type="user">
-        <div className="space-y-2">
-          <h3 className="font-semibold">Highlights from Deep Learning</h3>
-          <p>{content.split('Highlights from Deep Learning')[1].split('---')[0].trim()}</p>
-          <div className="mt-2 text-sm text-sky-100 flex items-center gap-1">
-            <ExternalLink className="w-4 h-4" />
-            <a href="https://openai.com" target="_blank" rel="noopener noreferrer">
-              Learn more at OpenAI
-            </a>
-          </div>
-        </div>
-      </MessageBubble>
-
-      {/* Notable AI Innovations */}
-      <MessageBubble>
-        <div className="space-y-2">
-          <h3 className="font-semibold">Notable AI Innovations</h3>
-          <p>{content.split('Notable AI Innovations')[1].split('---')[0].trim()}</p>
-        </div>
-      </MessageBubble>
-
-      {/* Closing Message */}
-      <MessageBubble type="user">
-        <p className="italic">
-          Stay tuned for more updates on the rapidly evolving world of AI technologies. 
-          Your insights could shape future innovations!
-        </p>
-        <div className="mt-2 text-sm text-sky-100">Written by The Team</div>
-      </MessageBubble>
-    </div>
-  </div>
-);
+  );
+};
 
 const DisplayNewsletter = ({ content }) => {
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-4">
-      <NewsletterContent content={content.newsletter.raw} />
+    <div className="divide-y divide-gray-100">
+      <Message 
+        type="user" 
+        content="Generate a newsletter about recent AI developments and innovations."
+      />
+      <Message 
+        type="ai" 
+        content={content.newsletter.raw}
+      />
     </div>
   );
 };
