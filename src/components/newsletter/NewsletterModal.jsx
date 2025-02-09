@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Wand2, X, AlertCircle } from 'lucide-react';
-import DisplayNewsletter from './DisplayNewsletter';
+import Message from './Message';
 
 const NewsletterModal = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([]);
@@ -27,7 +27,8 @@ const NewsletterModal = ({ isOpen, onClose }) => {
     setError('');
     
     // Add user message immediately
-    setMessages(prev => [...prev, { type: 'user', content: prompt }]);
+    const userMessage = prompt;
+    setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
     
     try {
       const response = await fetch('https://ai-agent-newsletter.onrender.com/generate-newsletter/', {
@@ -96,16 +97,11 @@ const NewsletterModal = ({ isOpen, onClose }) => {
 
           <div className="divide-y divide-gray-100">
             {messages.map((message, index) => (
-              <div key={index} className={message.type === 'user' ? 'bg-gray-50' : 'bg-white'}>
-                <DisplayNewsletter 
-                  content={{ 
-                    newsletter: { 
-                      raw: message.content 
-                    } 
-                  }}
-                  type={message.type}
-                />
-              </div>
+              <Message 
+                key={index}
+                content={message.content}
+                type={message.type}
+              />
             ))}
           </div>
           <div ref={messagesEndRef} />

@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { Copy, Check, User, Bot } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-const Message = ({ content, type = 'ai', onCopy }) => {
+const Message = ({ content, type = 'ai' }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    if (onCopy) onCopy();
   };
 
   return (
@@ -85,13 +84,4 @@ const Message = ({ content, type = 'ai', onCopy }) => {
   );
 };
 
-const DisplayNewsletter = ({ content, type = 'ai' }) => {
-  return (
-    <Message 
-      type={type} 
-      content={type === 'ai' ? content.newsletter.raw : content}
-    />
-  );
-};
-
-export default DisplayNewsletter;
+export default Message;
