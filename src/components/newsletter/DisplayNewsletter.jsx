@@ -85,18 +85,12 @@ const Message = ({ content, type = 'ai', onCopy }) => {
   );
 };
 
-const DisplayNewsletter = ({ content }) => {
+const DisplayNewsletter = ({ content, type = 'ai' }) => {
   return (
-    <div className="divide-y divide-gray-100">
-      <Message 
-        type="user" 
-        content="Generate a newsletter about recent AI developments and innovations."
-      />
-      <Message 
-        type="ai" 
-        content={content.newsletter.raw}
-      />
-    </div>
+    <Message 
+      type={type} 
+      content={type === 'ai' ? content.newsletter.raw : content}
+    />
   );
 };
 

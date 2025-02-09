@@ -1,12 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Send, Wand2, X, AlertCircle } from 'lucide-react';
 import DisplayNewsletter from './DisplayNewsletter';
 
 const NewsletterModal = ({ isOpen, onClose }) => {
+  const [messages, setMessages] = useState([]);
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
-  const [generatedContent, setGeneratedContent] = useState(null);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -16,6 +25,9 @@ const NewsletterModal = ({ isOpen, onClose }) => {
 
     setIsGenerating(true);
     setError('');
+    
+    // Add user message immediately
+    setMessages(prev => [...prev, { type: 'user', content: prompt }]);
     
     try {
       const response = await fetch('https://ai-agent-newsletter.onrender.com/generate-newsletter/', {
@@ -33,12 +45,27 @@ const NewsletterModal = ({ isOpen, onClose }) => {
       }
 
       const data = await response.json();
-      setGeneratedContent(data);
+      
+      // Add AI response
+      setMessages(prev => [...prev, { 
+        type: 'ai', 
+        content: data.newsletter.raw 
+      }]);
+      
+      // Clear input after successful generation
+      setPrompt('');
     } catch (err) {
       setError('Failed to generate newsletter. Please try again.');
       console.error('Generation error:', err);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleGenerate();
     }
   };
 
@@ -58,7 +85,7 @@ const NewsletterModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Content */}
+        {/* Messages Area */}
         <div className="flex-grow overflow-auto">
           {error && (
             <div className="m-4 bg-red-50 text-red-600 p-3 rounded-lg flex items-center gap-2">
@@ -67,42 +94,52 @@ const NewsletterModal = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {!generatedContent ? (
-            <div className="p-6">
-              <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition h-32 bg-white"
-                placeholder="Describe the newsletter you want to generate... (e.g., 'Create a tech newsletter about AI trends and recent developments')"
-              />
-            </div>
-          ) : (
-            <DisplayNewsletter content={generatedContent} />
-          )}
+          <div className="divide-y divide-gray-100">
+            {messages.map((message, index) => (
+              <div key={index} className={message.type === 'user' ? 'bg-gray-50' : 'bg-white'}>
+                <DisplayNewsletter 
+                  content={{ 
+                    newsletter: { 
+                      raw: message.content 
+                    } 
+                  }}
+                  type={message.type}
+                />
+              </div>
+            ))}
+          </div>
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Footer */}
-        {!generatedContent && (
-          <div className="p-4 border-t border-gray-200 bg-white rounded-b-xl">
+        {/* Input Area */}
+        <div className="p-4 border-t border-gray-200 bg-white rounded-b-xl">
+          <div className="flex gap-4">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="flex-grow px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none h-[100px] bg-white"
+              placeholder="Describe the newsletter you want to generate... (e.g., 'Create a tech newsletter about AI trends and recent developments')"
+            />
             <button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
+              className="h-[100px] px-6 bg-blue-600 text-white rounded-lg font-medium flex flex-col items-center justify-center gap-2 hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isGenerating ? (
                 <>
                   <Wand2 className="w-5 h-5 animate-spin" />
-                  Generating...
+                  <span className="text-sm">Generating...</span>
                 </>
               ) : (
                 <>
                   <Send className="w-5 h-5" />
-                  Generate Newsletter
+                  <span className="text-sm">Send</span>
                 </>
               )}
             </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
