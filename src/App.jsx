@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import NewsletterGenerator from './components/NewsletterGenerator'
-import GetoAI from './components/NewsletterGenerator'
 import Home from './pages/Home'
 
 function App() {
